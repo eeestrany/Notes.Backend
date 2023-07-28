@@ -9,11 +9,15 @@ namespace Notes.WebApi.Controllers
     public class BaseController : ControllerBase
     {
         private IMediator _mediator;
-        protected IMediator Mediator =>
-            _mediator ??= HttpContext.RequestServices.GetService<Mediator>(); 
+        protected IMediator Mediator { get; }
 
-        internal Guid UserId => !User.Identity.IsAuthenticated 
-            ? Guid.Empty 
-            : Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        internal Guid UserId => !User.Identity.IsAuthenticated
+            ? Guid.Empty
+            : Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        public BaseController([FromServices] IMediator mediator)
+        {
+            Mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        }
     }
 }

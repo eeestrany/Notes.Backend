@@ -5,6 +5,7 @@ using Notes.WebApi.Models;
 using AutoMapper;
 using Notes.Application.Notes.Commands.CreateNote;
 using Notes.Application.Notes.Commands.DeleteNote;
+using MediatR;
 
 namespace Notes.WebApi.Controllers
 {
@@ -14,10 +15,11 @@ namespace Notes.WebApi.Controllers
     {
         private readonly IMapper _mapper;
 
-        public NoteController(IMapper mapper)
+        public NoteController(IMapper mapper, IMediator mediator) : base(mediator)
         {
             _mapper = mapper;
         }
+
         [HttpGet]
         public async Task<ActionResult<NoteListViewModel>> GetAll()
         {
