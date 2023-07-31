@@ -17,17 +17,20 @@ namespace Notes.Application.Notes.Queries.GetNoteDetails
             _dbContext = dbContext;
             _mapper = mapper;
         }
-        async Task<NoteDetailsViewModel> IRequestHandler<GetNoteDetailsQuery, NoteDetailsViewModel>.Handle(GetNoteDetailsQuery request, CancellationToken cancellationToken)
+
+        public async Task<NoteDetailsViewModel> Handle(GetNoteDetailsQuery request,
+            CancellationToken cancellationToken)
         {
             var entity = await _dbContext.Notes
-                .FirstOrDefaultAsync(n => n.Id == request.Id, cancellationToken);
-            
-            if (entity == null || entity.UserId != request.UserId) 
+                .FirstOrDefaultAsync(note =>
+                note.Id == request.Id, cancellationToken);
+
+            if (entity == null || entity.UserId != request.UserId)
             {
                 throw new NotFoundException(nameof(Note), request.Id);
             }
 
-            return _mapper.Map<NoteDetailsViewModel>(entity); 
+            return _mapper.Map<NoteDetailsViewModel>(entity);
         }
     }
 }
