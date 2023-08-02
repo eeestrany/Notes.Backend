@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.Extensions.Options;
 using Notes.Application;
 using Notes.Application.Common.Mappings;
 using Notes.Application.Interfaces;
 using Notes.Persistence;
+using Notes.WebApi;
 using Notes.WebApi.Middleware;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,9 +19,19 @@ var configuration = new ConfigurationBuilder()
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddApiVersioning();
+builder.Services.AddVersionedApiExplorer(options =>
+    options.GroupNameFormat = "'v'VVV");
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>,
+    ConfiguraSwaggerOptions>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(config =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    config.IncludeXmlComments(xmlPath);
+});
 
 builder.Services.AddAutoMapper(config =>
 {
@@ -40,7 +54,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthentication(config =>
 {
-    config.DefaultAuthenticateScheme = 
+    config.DefaultAuthenticateScheme =
         JwtBearerDefaults.AuthenticationScheme;
     config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
@@ -49,9 +63,11 @@ builder.Services.AddAuthentication(config =>
         options.Authority = "https://localhost:44331/";
         options.Audience = "NotesWebAPI";
         options.RequireHttpsMetadata = false;
-     }); 
+    });
 
 var app = builder.Build();
+
+var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -67,8 +83,19 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(config =>
+    {
+        foreach (var description in provider.ApiVersionDescriptions)
+        {
+            config.SwaggerEndpoint(
+                $"/swagger/{description.GroupName}/swagger.json",
+                description.GroupName.ToUpperInvariant());
+            config.RoutePrefix = string.Empty;
+        }
+    });
 }
+
+app.UseApiVersioning();
 
 app.UseCustomExceptionHandler();
 
