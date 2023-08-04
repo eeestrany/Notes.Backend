@@ -7,8 +7,19 @@ using Notes.Application.Interfaces;
 using Notes.Persistence;
 using Notes.WebApi;
 using Notes.WebApi.Middleware;
+using Notes.WebApi.Services;
+using Serilog.Events;
+using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System;
+
+
+Log.Logger = new LoggerConfiguration()
+               .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+               .WriteTo.File("NotesWebAppLog-.txt", rollingInterval:
+                   RollingInterval.Day)
+               .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = new ConfigurationBuilder()
@@ -17,7 +28,7 @@ var configuration = new ConfigurationBuilder()
         .Build();
 
 // Add services to the container.
-
+builder.Host.UseSerilog();
 builder.Services.AddControllers();
 builder.Services.AddApiVersioning();
 builder.Services.AddVersionedApiExplorer(options =>
@@ -38,7 +49,8 @@ builder.Services.AddAutoMapper(config =>
     config.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
     config.AddProfile(new AssemblyMappingProfile(typeof(INotesDbContext).Assembly));
 });
-
+builder.Services.AddSingleton<ICurrentUserService, CurrentUserService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplication();
 builder.Services.AddPersistence(configuration);
 
@@ -77,7 +89,10 @@ using (var scope = app.Services.CreateScope())
         var context = serviceProvider.GetRequiredService<NotesDbContext>();
         DbInitializer.Initialize(context);
     }
-    catch (Exception ex) { }
+    catch (Exception ex) 
+    {
+        Log.Fatal(ex, "An error occurred while app initialization");
+    }
 }
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

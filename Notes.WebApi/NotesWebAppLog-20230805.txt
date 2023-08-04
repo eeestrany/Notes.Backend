@@ -1,0 +1,32 @@
+2023-08-05 02:50:25.412 +03:00 [INF] Executed DbCommand (16ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2023-08-05 02:50:25.508 +03:00 [INF] Executed DbCommand (55ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+
+IF EXISTS
+    (SELECT *
+     FROM [sys].[objects] o
+     WHERE [o].[type] = 'U'
+     AND [o].[is_ms_shipped] = 0
+     AND NOT EXISTS (SELECT *
+         FROM [sys].[extended_properties] AS [ep]
+         WHERE [ep].[major_id] = [o].[object_id]
+             AND [ep].[minor_id] = 0
+             AND [ep].[class] = 1
+             AND [ep].[name] = N'microsoft_database_tools_support'
+    )
+)
+SELECT 1 ELSE SELECT 0
+2023-08-05 02:50:25.615 +03:00 [INF] User profile is available. Using 'C:\Users\prozy\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2023-08-05 02:50:25.815 +03:00 [INF] Now listening on: https://localhost:7256
+2023-08-05 02:50:25.815 +03:00 [INF] Now listening on: http://localhost:5069
+2023-08-05 02:50:25.817 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-08-05 02:50:25.817 +03:00 [INF] Hosting environment: Development
+2023-08-05 02:50:25.817 +03:00 [INF] Content root path: C:\Users\prozy\Source\Repos\Notes.Backend\Notes.WebApi
+2023-08-05 02:50:26.642 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7256/index.html - -
+2023-08-05 02:50:26.927 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7256/index.html - - - 200 - text/html;charset=utf-8 288.1126ms
+2023-08-05 02:50:26.985 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7256/_framework/aspnetcore-browser-refresh.js - -
+2023-08-05 02:50:26.985 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7256/_vs/browserLink - -
+2023-08-05 02:50:26.998 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7256/_framework/aspnetcore-browser-refresh.js - - - 200 12356 application/javascript;+charset=utf-8 13.2183ms
+2023-08-05 02:50:27.061 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7256/_vs/browserLink - - - 200 - text/javascript;+charset=UTF-8 76.3280ms
+2023-08-05 02:50:27.154 +03:00 [INF] Request starting HTTP/2 GET https://localhost:7256/swagger/v1/swagger.json - -
+2023-08-05 02:50:27.296 +03:00 [INF] Request finished HTTP/2 GET https://localhost:7256/swagger/v1/swagger.json - - - 200 - application/json;charset=utf-8 141.2169ms
